@@ -1,0 +1,217 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                 String    @id
+  name               String
+  email              String
+  emailVerified      Boolean   @default(false)
+  image              String?
+  role               Role      @default(DOCTOR)
+  mustChangePassword Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  sessions           Session[]
+  accounts           Account[]
+
+  encounters   Encounter[]
+  appointments Appointment[]
+  auditLogs    AuditLog[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+enum Role {
+  DOCTOR
+  ADMIN
+}
+
+//  ─────────────────────────────
+// Domain models
+// ─────────────────────────────
+
+enum Sex {
+  MALE
+  FEMALE
+}
+
+model Patient {
+  id                String   @id @default(cuid())
+  hospitalNo        String   @unique
+  name              String
+  dob               DateTime
+  sex               Sex
+  phone             String?
+  address           String?
+  emergencyName     String?
+  emergencyPhone    String?
+  bloodGroup        String?
+  allergies         String[] @default([])
+  chronicConditions String[] @default([])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  encounters   Encounter[]
+  vitals       Vital[]
+  appointments Appointment[]
+  documents    Document[]
+  auditLogs    AuditLog[]
+
+  @@index([name])
+}
+
+model Encounter {
+  id        String   @id @default(cuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId  String
+  doctor    User     @relation(fields: [doctorId], references: [id])
+  date      DateTime @default(now())
+  complaint String
+  diagnosis String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  prescriptions Prescription[]
+
+  @@index([patientId])
+  @@index([doctorId])
+}
+
+model Prescription {
+  id          String    @id @default(cuid())
+  encounterId String
+  encounter   Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+  drug        String
+  dosage      String
+  duration    String
+  createdAt   DateTime  @default(now())
+
+  @@index([encounterId])
+}
+
+model Vital {
+  id        String   @id @default(cuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  date      DateTime @default(now())
+  bp        String?
+  temp      Float?
+  weight    Float?
+  height    Float?
+
+  @@index([patientId])
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  patientId  String
+  patient    Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  label      String
+  filePath   String
+  uploadedAt DateTime @default(now())
+
+  @@index([patientId])
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model Appointment {
+  id        String            @id @default(cuid())
+  patientId String
+  patient   Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId  String
+  doctor    User              @relation(fields: [doctorId], references: [id])
+  date      DateTime
+  reason    String?
+  status    AppointmentStatus @default(SCHEDULED)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([date])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  tableName String
+  recordId  String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String // "CREATE" | "UPDATE" | "DELETE"
+  oldValue  Json?
+  newValue  Json?
+  patientId String?
+  patient   Patient? @relation(fields: [patientId], references: [id])
+  timestamp DateTime @default(now())
+
+  @@index([recordId])
+  @@index([patientId])
+}
