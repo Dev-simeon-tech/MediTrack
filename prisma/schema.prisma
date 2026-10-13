@@ -25,12 +25,33 @@ model User {
   sessions           Session[]
   accounts           Account[]
 
-  encounters   Encounter[]
-  appointments Appointment[]
-  auditLogs    AuditLog[]
+  encounters    Encounter[]
+  appointments  Appointment[]
+  auditLogs     AuditLog[]
+  doctorProfile DoctorProfile?
 
   @@unique([email])
   @@map("user")
+}
+
+enum DoctorGender {
+  MALE
+  FEMALE
+  NON_BINARY
+  PREFER_NOT_TO_SAY
+}
+
+model DoctorProfile {
+  userId           String        @id
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone            String
+  medicalLicenseNo String        @unique
+  specialization   String
+  dateOfBirth      DateTime?
+  gender           DoctorGender?
+  assignedUnit     String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 }
 
 model Session {
@@ -95,6 +116,13 @@ enum Sex {
   FEMALE
 }
 
+enum EncounterCategory {
+  CONSULTATION
+  FOLLOW_UP
+  URGENT_TRIAGE
+  PROCEDURE
+}
+
 model Patient {
   id                String   @id @default(cuid())
   hospitalNo        String   @unique
@@ -121,17 +149,20 @@ model Patient {
 }
 
 model Encounter {
-  id        String   @id @default(cuid())
-  patientId String
-  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctorId  String
-  doctor    User     @relation(fields: [doctorId], references: [id])
-  date      DateTime @default(now())
-  complaint String
-  diagnosis String?
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String            @id @default(cuid())
+  patientId     String
+  patient       Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId      String
+  doctor        User              @relation(fields: [doctorId], references: [id])
+  appointmentId String?           @unique
+  appointment   Appointment?      @relation(fields: [appointmentId], references: [id])
+  category      EncounterCategory @default(CONSULTATION)
+  date          DateTime          @default(now())
+  complaint     String
+  diagnosis     String?
+  notes         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
   prescriptions Prescription[]
 
@@ -193,6 +224,8 @@ model Appointment {
   status    AppointmentStatus @default(SCHEDULED)
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
+
+  encounter Encounter? // one-to-one: this appointment's resulting visit record
 
   @@index([patientId])
   @@index([doctorId])

@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MediTrack EHR - Audit Log</title>
+<!-- Tailwind CSS with Forms and Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-container-highest": "#d3e4fe",
+            "on-surface": "#0f172a",
+            "error-container": "#fef2f2",
+            "on-secondary": "#ffffff",
+            "secondary-container": "#e0f2fe",
+            "on-background": "#0f172a",
+            "primary": "#1d4ed8",
+            "primary-hover": "#1e40af",
+            "primary-container": "#1d4ed8",
+            "on-primary": "#ffffff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f8fafc",
+            "surface-container": "#f1f5f9",
+            "surface-container-high": "#e2e8f0",
+            "outline": "#94a3b8",
+            "outline-variant": "#e2e8f0",
+            "background": "#f8fafc",
+            "surface": "#ffffff",
+            "on-surface-variant": "#64748b",
+            "secondary": "#0284c7"
+          },
+          fontFamily: {
+            sans: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    /* Sleek slim scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased font-sans min-h-screen overflow-x-hidden selection:bg-blue-100 selection:text-blue-900">
+<!-- ================= TOP APP BAR ================= -->
+<header class="flex justify-between items-center h-14 px-6 w-full fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
+<!-- Brand / Left Group with Search -->
+<div class="flex items-center gap-6 w-1/3 min-w-[340px]">
+<div class="flex items-center gap-2.5 pr-6 border-r border-slate-200/80">
+<img alt="MediTrack EHR" class="h-7 object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UWW8PAk_xSQXyvAqaXIQ-zAP2qKlN41UbpD6PlAIPjQIakbppSXA-p6tFPzFbHKNjcmDdllXONll5MA8SaQdd95ubU1KtmwPdcqvFtX7AsMD9IRqu7NyTJrwcnfpSJtsFAZppWu29ZPHRJTZyE8f4e6m1m91ONvPfXJjLl0xg3Im38cxYfVziQ4dvowA2cYAQFhdYaz2YTAAmnRQhHEeF04LLb_LH2Qt1kQZ1I5jLpb6mg59BsaqpcTC8"/>
+</div>
+<!-- Global Search with ⌘K shortcut -->
+<div class="relative w-full max-w-sm">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+<input class="w-full h-8 pl-9 pr-11 bg-slate-50 hover:bg-slate-100/70 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition-all" placeholder="Search MRN, staff, clinical audit..." type="text"/>
+<kbd class="absolute right-2.5 top-1/2 -translate-y-1/2 font-mono text-[10px] text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded shadow-2xs font-medium">⌘K</kbd>
+</div>
+</div>
+<!-- Center Status Pill -->
+<div class="hidden lg:flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200/90 rounded-full text-xs">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span class="text-slate-700 font-medium">HIPAA Compliance Active</span>
+<span class="text-slate-300">|</span>
+<span class="text-slate-500 font-mono text-[11px]">System Audit v4.2</span>
+</div>
+<!-- Right Controls -->
+<div class="flex items-center gap-3">
+<!-- Emergency Override Trigger -->
+<button class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100/70 border border-rose-200/70 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[15px]">lock_reset</span>
+<span>Privilege Override</span>
+</button>
+<!-- Notification Action -->
+<button class="relative p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" title="Audit Notifications">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full ring-2 ring-white"></span>
+</button>
+<!-- Help Action -->
+<button class="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" title="Audit Guidelines">
+<span class="material-symbols-outlined text-[20px]">help</span>
+</button>
+<div class="h-4 w-[1px] bg-slate-200 mx-1"></div>
+<!-- User Profile Dropdown -->
+<div class="flex items-center gap-2.5 pl-1 py-1 rounded-lg hover:bg-slate-50 cursor-pointer group transition-colors">
+<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white text-xs font-bold flex items-center justify-center shadow-xs">
+          MV
+        </div>
+<div class="hidden xl:flex flex-col text-left leading-tight">
+<span class="text-xs font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">Marcus Vance</span>
+<span class="text-[11px] text-slate-500">Lead Compliance Admin</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-[18px]">expand_more</span>
+</div>
+</div>
+</header>
+<!-- ================= SIDE NAVIGATION BAR ================= -->
+<aside class="fixed left-0 top-14 bottom-0 w-[240px] flex flex-col justify-between py-4 px-3 z-30 overflow-y-auto bg-white border-r border-slate-200/80">
+<div class="flex flex-col gap-1">
+<!-- Sub-Facility Info -->
+<div class="px-2 py-2 mb-2 rounded-lg bg-slate-50/80 border border-slate-100">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+<span class="material-symbols-outlined text-[17px]">local_hospital</span>
+</div>
+<div class="min-w-0">
+<div class="text-xs font-semibold text-slate-800 truncate">St. Jude Medical Center</div>
+<div class="text-[10px] text-slate-400 truncate">Acute &amp; Ambulatory v4.2</div>
+</div>
+</div>
+</div>
+<!-- Quick Action CTA -->
+<div class="mb-3">
+<button class="w-full flex items-center justify-center gap-2 py-2 px-3 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-all shadow-xs active:scale-[0.99]">
+<span class="material-symbols-outlined text-[17px]">add_circle</span>
+<span>New Encounter</span>
+</button>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex flex-col gap-0.5">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-medium rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[19px] text-slate-400">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-medium rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[19px] text-slate-400">patient_list</span>
+<span>Patients</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-medium rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[19px] text-slate-400">event</span>
+<span>Appointments</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-medium rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[19px] text-slate-400">assignment</span>
+<span>Encounters</span>
+</a>
+<!-- Section Label -->
+<div class="px-3 pt-4 pb-1">
+<span class="text-[10px] uppercase font-semibold tracking-wider text-slate-400">Governance &amp; Security</span>
+</div>
+<!-- ACTIVE AUDIT LOG TAB -->
+<a class="flex items-center justify-between px-3 py-2 bg-blue-50/80 text-blue-700 text-xs font-semibold rounded-lg transition-colors border border-blue-100" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[19px] text-blue-600" style="font-variation-settings: 'FILL' 1;">security</span>
+<span>Audit Log</span>
+</div>
+<span class="px-1.5 py-0.5 bg-blue-600 text-white font-mono text-[9px] rounded font-bold uppercase tracking-tight">Live</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-medium rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[19px] text-slate-400">chips</span>
+<span>Lab Results</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-medium rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[19px] text-slate-400">calendar_month</span>
+<span>Schedules</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-medium rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[19px] text-slate-400">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer -->
+<div class="pt-3 border-t border-slate-100 flex flex-col gap-0.5">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-medium rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[19px] text-slate-400">contact_support</span>
+<span>Support</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-rose-600 hover:bg-rose-50 text-xs font-medium rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[19px] text-slate-400">logout</span>
+<span>Sign Out</span>
+</a>
+</div>
+</aside>
+<!-- ================= MAIN CONTENT CANVAS ================= -->
+<main class="ml-[240px] pt-14 min-h-screen pb-12 flex">
+<!-- Main Center Stream -->
+<div class="flex-1 px-8 py-7 max-w-[calc(100vw-240px-440px)] min-w-0">
+<!-- Breadcrumbs & Page Header -->
+<div class="mb-6">
+<div class="flex items-center gap-1.5 text-xs text-slate-400 mb-2 font-medium">
+<span class="hover:text-slate-600 cursor-pointer">System Administration</span>
+<span class="material-symbols-outlined text-[13px] text-slate-300">chevron_right</span>
+<span class="hover:text-slate-600 cursor-pointer">Compliance &amp; Security</span>
+<span class="material-symbols-outlined text-[13px] text-slate-300">chevron_right</span>
+<span class="text-blue-600 font-semibold">Audit Log</span>
+</div>
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-slate-900">Audit Log</h1>
+<p class="text-xs text-slate-500 mt-1">Immutable ledger tracking encounter lifecycle, clinical record diffs, and privilege escalations</p>
+</div>
+<!-- Header Actions -->
+<div class="flex items-center gap-2.5 self-start sm:self-auto">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-medium rounded-lg transition-colors shadow-2xs">
+<span class="material-symbols-outlined text-[16px] text-slate-500">tune</span>
+<span>Filter Presets</span>
+<span class="material-symbols-outlined text-[15px] text-slate-400">expand_more</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 text-white hover:bg-blue-700 text-xs font-medium rounded-lg transition-all shadow-2xs">
+<span class="material-symbols-outlined text-[16px]">download</span>
+<span>Export Log</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Stat Cards Strip -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+<!-- Metric 1 -->
+<div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs hover:shadow-xs transition-shadow">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-medium text-slate-500">Total Log Entries</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Live Recording
+            </span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold tracking-tight text-slate-900 font-mono">1,428</span>
+<span class="text-xs font-semibold text-emerald-600 flex items-center">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> +12%
+            </span>
+</div>
+<p class="text-[11px] text-slate-400 mt-1">vs. 7-day average (1,275/day)</p>
+</div>
+<!-- Metric 2 -->
+<div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs hover:shadow-xs transition-shadow">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-medium text-slate-500">Encounters Created</span>
+<div class="w-6 h-6 rounded-md bg-blue-50 flex items-center justify-center text-blue-600">
+<span class="material-symbols-outlined text-[15px]">add_task</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold tracking-tight text-slate-900 font-mono">342</span>
+<span class="text-xs font-medium text-slate-500">Active Week</span>
+</div>
+<p class="text-[11px] text-slate-400 mt-1">Logged across 6 inpatient depts</p>
+</div>
+<!-- Metric 3 -->
+<div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs hover:shadow-xs transition-shadow">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-medium text-slate-500">Modifications &amp; Updates</span>
+<div class="w-6 h-6 rounded-md bg-amber-50 flex items-center justify-center text-amber-600">
+<span class="material-symbols-outlined text-[15px]">edit_note</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold tracking-tight text-slate-900 font-mono">89</span>
+<span class="text-[11px] font-mono text-slate-500">100% diffed</span>
+</div>
+<p class="text-[11px] text-slate-400 mt-1">Field-level immutable version capture</p>
+</div>
+<!-- Metric 4: Flagged -->
+<div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs hover:shadow-xs transition-shadow">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-medium text-slate-500">Flagged / Unusual</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80">
+<span class="material-symbols-outlined text-[12px]">warning</span>
+              2 Action Items
+            </span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold tracking-tight text-amber-600 font-mono">2</span>
+<span class="text-xs font-medium text-slate-500">Unreviewed</span>
+</div>
+<p class="text-[11px] text-slate-400 mt-1">After-hours chart access logged</p>
+</div>
+</div>
+<!-- Modern Streamlined Filter Toolbar -->
+<div class="bg-white p-3 rounded-xl border border-slate-200/80 shadow-2xs mb-4 space-y-3">
+<div class="flex flex-col md:flex-row items-center gap-2">
+<!-- Text Search Filter -->
+<div class="relative flex-1 w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+<input class="w-full h-9 pl-9 pr-3 bg-slate-50/80 hover:bg-slate-50 focus:bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-500 transition-colors font-mono" placeholder="Search by patient, clinician, MRN, or encounter..." type="text" value="ENC-2023-8841"/>
+</div>
+<!-- Action Type Dropdown -->
+<div class="relative w-full md:w-44">
+<select class="w-full h-9 pl-3 pr-8 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:bg-white focus:border-blue-600 font-medium appearance-none cursor-pointer">
+<option>All Actions (Any)</option>
+<option selected="">Updated (Edits)</option>
+<option>Created (New)</option>
+<option>Closed / Signed</option>
+<option>Deleted (Revoked)</option>
+<option>Privilege Escalation</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">expand_more</span>
+</div>
+<!-- Date Range Filter -->
+<div class="relative w-full md:w-52">
+<div class="flex items-center justify-between h-9 px-3 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 cursor-pointer">
+<div class="flex items-center gap-2 truncate">
+<span class="material-symbols-outlined text-slate-400 text-[16px]">calendar_today</span>
+<span class="truncate font-medium">Oct 24, 2023 (Today)</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-[16px]">expand_more</span>
+</div>
+</div>
+<!-- Doctor/User Dropdown -->
+<div class="relative w-full md:w-48">
+<select class="w-full h-9 pl-3 pr-8 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:bg-white focus:border-blue-600 font-medium appearance-none cursor-pointer">
+<option>All Users &amp; Roles</option>
+<option selected="">Dr. Sarah Lin, MD</option>
+<option>Dr. Robert Chen, MD</option>
+<option>Elena Rostova, RN</option>
+<option>Marcus Vance (Admin)</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">expand_more</span>
+</div>
+</div>
+<!-- Filter Presets & Clear Row -->
+<div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mr-1">Presets:</span>
+<button class="px-2.5 py-0.5 rounded-md bg-slate-50 hover:bg-slate-100 border border-slate-200/90 text-slate-600 text-xs font-medium transition-colors">
+              HIPAA Access Logs
+            </button>
+<button class="px-2.5 py-0.5 rounded-md bg-slate-50 hover:bg-slate-100 border border-slate-200/90 text-slate-600 text-xs font-medium transition-colors">
+              Controlled Substances (Narcotics)
+            </button>
+<button class="px-2.5 py-0.5 rounded-md bg-slate-50 hover:bg-slate-100 border border-slate-200/90 text-slate-600 text-xs font-medium transition-colors">
+              Record Deletions
+            </button>
+<button class="px-2.5 py-0.5 rounded-md bg-slate-50 hover:bg-slate-100 border border-slate-200/90 text-slate-600 text-xs font-medium transition-colors">
+              Staff Self-Access
+            </button>
+</div>
+<button class="text-slate-500 hover:text-slate-800 text-xs font-medium flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[15px]">restart_alt</span>
+<span>Reset Filters</span>
+</button>
+</div>
+</div>
+<!-- Main Audit Log Enterprise Table -->
+<div class="bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50/70 border-b border-slate-200/80 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+<th class="py-3 px-4">Timestamp (EDT)</th>
+<th class="py-3 px-4">User &amp; Role</th>
+<th class="py-3 px-3">Action</th>
+<th class="py-3 px-4">Patient / MRN</th>
+<th class="py-3 px-4">Encounter ID</th>
+<th class="py-3 px-4">Changes Summary</th>
+<th class="py-3 px-3 text-right">Details</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 text-xs text-slate-700">
+<!-- Row 1: ACTIVE / INSPECTED ROW -->
+<tr class="bg-blue-50/40 relative font-medium hover:bg-blue-50/60 transition-colors">
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="text-slate-900 font-semibold">Oct 24, 2023</div>
+<div class="font-mono text-slate-400 text-[11px]">10:48:12.402</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[11px] shadow-2xs">SL</div>
+<div>
+<div class="text-xs font-semibold text-slate-900">Dr. Sarah Lin, MD</div>
+<span class="inline-block text-[10px] text-slate-500 font-normal">Attending Physician</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-3 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/70 text-[11px] font-medium">
+<span class="material-symbols-outlined text-[13px]">edit</span>
+<span>Updated</span>
+</span>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="text-xs font-semibold text-slate-900">Eleanor Vance</div>
+<div class="font-mono text-slate-400 text-[11px]">#MRN-84920</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="font-mono text-blue-600 font-semibold hover:underline cursor-pointer">ENC-2023-8841</div>
+<div class="text-[11px] text-slate-400">Cardiology Spec</div>
+</td>
+<td class="py-3.5 px-4 max-w-xs">
+<span class="inline-block truncate bg-slate-50 px-2 py-1 rounded border border-slate-200 text-slate-600 font-mono text-[11px]">
+                    Diagnosis: G43.009; Rx: Sumatriptan
+                  </span>
+</td>
+<td class="py-3.5 px-3 text-right whitespace-nowrap">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-600 text-white text-[11px] font-medium rounded-lg shadow-2xs hover:bg-blue-700 transition-colors">
+<span>Active</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Created Action -->
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="text-slate-800">Oct 24, 2023</div>
+<div class="font-mono text-slate-400 text-[11px]">10:35:04.118</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-[11px] shadow-2xs">ER</div>
+<div>
+<div class="text-xs font-medium text-slate-900">Elena Rostova, RN</div>
+<span class="inline-block text-[10px] text-slate-500 font-normal">Triage Nurse</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-3 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/70 text-[11px] font-medium">
+<span class="material-symbols-outlined text-[13px]">add_circle</span>
+<span>Created</span>
+</span>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="text-xs font-medium text-slate-900">Marcus Brody</div>
+<div class="font-mono text-slate-400 text-[11px]">#MRN-48201</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="font-mono text-slate-700 hover:text-blue-600 cursor-pointer">ENC-2023-8840</div>
+<div class="text-[11px] text-slate-400">Emergency Dept</div>
+</td>
+<td class="py-3.5 px-4 max-w-xs">
+<span class="inline-block truncate bg-slate-50 px-2 py-1 rounded border border-slate-200 text-slate-600 font-mono text-[11px]">
+                    Intake vitals; BP: 142/88, SpO2: 97%
+                  </span>
+</td>
+<td class="py-3.5 px-3 text-right whitespace-nowrap">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 text-[11px] font-medium rounded-lg transition-colors">
+<span>View</span>
+<span class="material-symbols-outlined text-[14px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Closed / Signed Action -->
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="text-slate-800">Oct 24, 2023</div>
+<div class="font-mono text-slate-400 text-[11px]">10:22:50.002</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-[11px] shadow-2xs">RC</div>
+<div>
+<div class="text-xs font-medium text-slate-900">Dr. Robert Chen, MD</div>
+<span class="inline-block text-[10px] text-slate-500 font-normal">Chief of Surgery</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-3 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-medium">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+<span>Closed</span>
+</span>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="text-xs font-medium text-slate-900">David K. Kim</div>
+<div class="font-mono text-slate-400 text-[11px]">#MRN-92144</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="font-mono text-slate-700 hover:text-blue-600 cursor-pointer">ENC-2023-8838</div>
+<div class="text-[11px] text-slate-400">General Surgery</div>
+</td>
+<td class="py-3.5 px-4 max-w-xs">
+<span class="inline-block truncate bg-slate-50 px-2 py-1 rounded border border-slate-200 text-slate-600 font-mono text-[11px]">
+                    Surgical note attested &amp; encrypted
+                  </span>
+</td>
+<td class="py-3.5 px-3 text-right whitespace-nowrap">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 text-[11px] font-medium rounded-lg transition-colors">
+<span>View</span>
+<span class="material-symbols-outlined text-[14px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Deleted Item -->
+<tr class="hover:bg-rose-50/40 transition-colors">
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="text-slate-800">Oct 24, 2023</div>
+<div class="font-mono text-slate-400 text-[11px]">09:54:19.891</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-slate-700 text-white flex items-center justify-center font-bold text-[11px] shadow-2xs">MV</div>
+<div>
+<div class="text-xs font-medium text-slate-900">Marcus Vance</div>
+<span class="inline-block text-[10px] text-slate-500 font-normal">Admin Sec</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-3 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200/70 text-[11px] font-medium">
+<span class="material-symbols-outlined text-[13px]">delete</span>
+<span>Deleted</span>
+</span>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="text-xs font-medium text-slate-900">Clara Oswald</div>
+<div class="font-mono text-slate-400 text-[11px]">#MRN-33092</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="font-mono text-slate-700 hover:text-blue-600 cursor-pointer">ENC-2023-8835</div>
+<div class="text-[11px] text-slate-400">Pediatric Care</div>
+</td>
+<td class="py-3.5 px-4 max-w-xs">
+<span class="inline-block truncate bg-rose-50/70 text-rose-700 px-2 py-1 rounded border border-rose-200/70 font-mono text-[11px]">
+                    Duplicate draft order revoked
+                  </span>
+</td>
+<td class="py-3.5 px-3 text-right whitespace-nowrap">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 text-[11px] font-medium rounded-lg transition-colors">
+<span>View</span>
+<span class="material-symbols-outlined text-[14px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Escalation/Security Event -->
+<tr class="hover:bg-slate-50/80 transition-colors">
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="text-slate-800">Oct 24, 2023</div>
+<div class="font-mono text-slate-400 text-[11px]">09:12:02.320</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[11px] shadow-2xs">SL</div>
+<div>
+<div class="text-xs font-medium text-slate-900">Dr. Sarah Lin, MD</div>
+<span class="inline-block text-[10px] text-slate-500 font-normal">Attending Physician</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-3 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/70 text-[11px] font-medium">
+<span class="material-symbols-outlined text-[13px]">key</span>
+<span>Override</span>
+</span>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="text-xs font-medium text-slate-900">Anthony G. Hopkins</div>
+<div class="font-mono text-slate-400 text-[11px]">#MRN-10928</div>
+</td>
+<td class="py-3.5 px-4 whitespace-nowrap">
+<div class="font-mono text-slate-700 hover:text-blue-600 cursor-pointer">ENC-2023-8829</div>
+<div class="text-[11px] text-slate-400">Oncology Intensive</div>
+</td>
+<td class="py-3.5 px-4 max-w-xs">
+<span class="inline-block truncate bg-slate-50 px-2 py-1 rounded border border-slate-200 text-slate-600 font-mono text-[11px]">
+                    Emergency override for Code Red narcotic order
+                  </span>
+</td>
+<td class="py-3.5 px-3 text-right whitespace-nowrap">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 text-[11px] font-medium rounded-lg transition-colors">
+<span>View</span>
+<span class="material-symbols-outlined text-[14px]">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Pagination -->
+<div class="px-4 py-3 bg-slate-50/70 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+<div>
+            Showing <span class="font-semibold text-slate-800">1</span> to <span class="font-semibold text-slate-800">10</span> of <span class="font-semibold text-slate-800">1,428</span> entries
+          </div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5">
+<span class="text-slate-400">Rows:</span>
+<select class="h-7 text-xs bg-white border border-slate-200 rounded px-2 py-0 focus:outline-none focus:border-blue-600 font-medium">
+<option>10</option>
+<option>25</option>
+<option>50</option>
+<option>100</option>
+</select>
+</div>
+<div class="flex items-center gap-1">
+<button class="px-2.5 py-1 bg-white border border-slate-200 rounded text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors">Prev</button>
+<button class="w-7 h-7 bg-blue-600 text-white font-semibold rounded flex items-center justify-center">1</button>
+<button class="w-7 h-7 bg-white border border-slate-200 text-slate-700 rounded hover:bg-slate-50 flex items-center justify-center">2</button>
+<button class="w-7 h-7 bg-white border border-slate-200 text-slate-700 rounded hover:bg-slate-50 flex items-center justify-center">3</button>
+<span class="text-slate-400 px-0.5">...</span>
+<button class="w-7 h-7 bg-white border border-slate-200 text-slate-700 rounded hover:bg-slate-50 flex items-center justify-center">143</button>
+<button class="px-2.5 py-1 bg-white border border-slate-200 rounded text-slate-600 hover:bg-slate-50 transition-colors">Next</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ================= MODERN RIGHT CONTEXT DRAWER (Sleek Inspect Panel) ================= -->
+<aside class="fixed right-0 top-14 bottom-0 w-[440px] bg-white border-l border-slate-200/80 shadow-xl flex flex-col z-30">
+<!-- Drawer Header -->
+<div class="px-5 py-3.5 border-b border-slate-200/80 flex items-center justify-between bg-slate-50/60">
+<div>
+<div class="flex items-center gap-2">
+<span class="text-sm font-bold text-slate-900">Log Entry Details</span>
+<span class="font-mono text-[11px] px-2 py-0.5 bg-white border border-slate-200 text-slate-600 rounded-md font-medium">#LOG-94810</span>
+</div>
+<div class="font-mono text-[11px] text-slate-400 mt-0.5">Linked: ENC-2023-8841</div>
+</div>
+<button class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors" title="Close Panel">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Drawer Body (Scrollable) -->
+<div class="flex-1 overflow-y-auto p-5 space-y-5">
+<!-- Summary Meta Card -->
+<div class="p-3.5 bg-slate-50/70 rounded-xl border border-slate-200/80 space-y-3">
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/70 text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[13px]">edit</span>
+<span>Updated Record</span>
+</span>
+<span class="font-mono text-[11px] text-slate-500">Oct 24, 2023 · 10:48:12 EDT</span>
+</div>
+<div class="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-200/60 text-xs">
+<div>
+<span class="text-slate-400 block text-[10px] uppercase font-semibold tracking-wider">Clinician</span>
+<span class="font-medium text-slate-900 block mt-0.5">Dr. Sarah Lin, MD</span>
+<span class="text-[11px] text-slate-500">Internal Med / Card</span>
+</div>
+<div>
+<span class="text-slate-400 block text-[10px] uppercase font-semibold tracking-wider">Patient</span>
+<span class="font-medium text-slate-900 block mt-0.5">Eleanor Vance (54y)</span>
+<span class="font-mono text-[11px] text-blue-600 font-medium">#MRN-84920</span>
+</div>
+</div>
+<div class="pt-2.5 border-t border-slate-200/60 text-[11px] text-slate-400 flex items-center justify-between font-mono">
+<span>IP: 192.168.4.112 (WS-04)</span>
+<span class="text-emerald-600 font-medium flex items-center gap-1 font-sans text-xs">
+<span class="material-symbols-outlined text-[14px]">verified</span> Valid State
+            </span>
+</div>
+</div>
+<!-- Section: Field-Level Visual Diffs -->
+<div>
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Field-Level Visual Diff</h3>
+<span class="text-[11px] text-slate-400 font-mono">3 changes</span>
+</div>
+<div class="space-y-3">
+<!-- Diff 1: ICD-10 Diagnosis -->
+<div class="border border-slate-200/80 rounded-xl overflow-hidden shadow-2xs">
+<div class="px-3.5 py-2 bg-slate-50/80 border-b border-slate-200/70 text-xs font-semibold text-slate-800 flex items-center justify-between">
+<span>Clinical Diagnosis (ICD-10)</span>
+<span class="text-[10px] text-slate-400 font-mono">chart.diagnoses[0]</span>
+</div>
+<div class="p-3 space-y-2 bg-white text-xs">
+<!-- Old Value -->
+<div class="p-2.5 rounded-lg bg-rose-50/60 border border-rose-100 flex items-start gap-2">
+<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-rose-100 text-rose-700 font-mono text-[10px] font-bold shrink-0 mt-0.5">−</span>
+<div class="font-mono text-[11px] text-rose-900/80 line-through">
+                    Primary: Tension-type headache (G44.2)
+                  </div>
+</div>
+<!-- New Value -->
+<div class="p-2.5 rounded-lg bg-blue-50/60 border border-blue-100 flex items-start gap-2">
+<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-100 text-blue-700 font-mono text-[10px] font-bold shrink-0 mt-0.5">+</span>
+<div class="font-mono text-[11px] text-blue-900 font-medium">
+                    Primary: Migraine without aura (G43.009); Secondary: Stress (Z56.6)
+                  </div>
+</div>
+</div>
+</div>
+<!-- Diff 2: Prescriptions -->
+<div class="border border-slate-200/80 rounded-xl overflow-hidden shadow-2xs">
+<div class="px-3.5 py-2 bg-slate-50/80 border-b border-slate-200/70 text-xs font-semibold text-slate-800 flex items-center justify-between">
+<span>Prescriptions &amp; Med Orders</span>
+<span class="text-[10px] text-slate-400 font-mono">chart.medications[2]</span>
+</div>
+<div class="p-3 space-y-2 bg-white text-xs">
+<!-- Old Value -->
+<div class="p-2.5 rounded-lg bg-rose-50/60 border border-rose-100 flex items-start gap-2">
+<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-rose-100 text-rose-700 font-mono text-[10px] font-bold shrink-0 mt-0.5">−</span>
+<div class="font-mono text-[11px] text-rose-900/80 line-through">
+                    Ibuprofen 400mg PO TID (Qty: 30 tablets, 0 Refills)
+                  </div>
+</div>
+<!-- New Value -->
+<div class="p-2.5 rounded-lg bg-blue-50/60 border border-blue-100 flex items-start gap-2">
+<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-100 text-blue-700 font-mono text-[10px] font-bold shrink-0 mt-0.5">+</span>
+<div class="font-mono text-[11px] text-blue-900 font-medium">
+                    Sumatriptan 50mg PO PRN (Qty: 9) + Ibuprofen 400mg PRN
+                  </div>
+</div>
+</div>
+</div>
+<!-- Diff 3: Encounter Lifecycle State -->
+<div class="border border-slate-200/80 rounded-xl overflow-hidden shadow-2xs">
+<div class="px-3.5 py-2 bg-slate-50/80 border-b border-slate-200/70 text-xs font-semibold text-slate-800 flex items-center justify-between">
+<span>Encounter Lifecycle Status</span>
+<span class="text-[10px] text-slate-400 font-mono">encounter.status</span>
+</div>
+<div class="p-3 space-y-2 bg-white text-xs">
+<!-- Old Value -->
+<div class="p-2.5 rounded-lg bg-rose-50/60 border border-rose-100 flex items-start gap-2">
+<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-rose-100 text-rose-700 font-mono text-[10px] font-bold shrink-0 mt-0.5">−</span>
+<div class="font-mono text-[11px] text-rose-900/80 line-through">
+                    In-Progress / Draft
+                  </div>
+</div>
+<!-- New Value -->
+<div class="p-2.5 rounded-lg bg-blue-50/60 border border-blue-100 flex items-start gap-2">
+<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-100 text-blue-700 font-mono text-[10px] font-bold shrink-0 mt-0.5">+</span>
+<div class="font-mono text-[11px] text-blue-900 font-medium">
+                    Pending Physician Attestation &amp; Signature
+                  </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Cryptographic Verification Block -->
+<div class="p-3.5 bg-slate-50/60 rounded-xl border border-slate-200/80">
+<div class="flex items-center justify-between mb-1.5">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Cryptographic Verification</span>
+<span class="text-emerald-700 font-medium text-[11px] flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
+<span class="material-symbols-outlined text-[13px]">lock</span> Tamper-Proof
+            </span>
+</div>
+<div class="font-mono text-[10px] text-slate-500 break-all bg-white p-2.5 rounded-lg border border-slate-200/80 select-all">
+            e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+          </div>
+<div class="mt-2 text-[11px] text-slate-400 flex items-center justify-between">
+<span>Signed via: HSM-Node-02</span>
+<span>SHA-256 Validated</span>
+</div>
+</div>
+</div>
+<!-- Drawer Fixed Footer -->
+<div class="p-4 border-t border-slate-200/80 bg-white flex items-center justify-between gap-3">
+<button class="px-4 py-2 border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold rounded-lg transition-colors">
+          Close
+        </button>
+<button class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-4 bg-blue-600 text-white hover:bg-blue-700 text-xs font-semibold rounded-lg transition-colors shadow-2xs">
+<span>View Full Encounter</span>
+<span class="material-symbols-outlined text-[15px]">open_in_new</span>
+</button>
+</div>
+</aside>
+</main>
+</body></html>

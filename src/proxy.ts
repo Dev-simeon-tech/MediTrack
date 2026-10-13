@@ -9,7 +9,7 @@ export function proxy(request: NextRequest) {
     const signInUrl = new URL("/sign-in", request.url);
 
     signInUrl.searchParams.set(
-      "redirect",
+      "redirectUrl",
       request.nextUrl.pathname + request.nextUrl.search,
     );
 
@@ -19,5 +19,10 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/patients/:path*", "/appointments/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/patients/:path*",
+    "/appointments/:path*",
+    "/api/patients/:path*",
+  ],
 };
