@@ -1,5 +1,6 @@
 "use client";
 import { useState, useActionState } from "react";
+import { useRouter } from "next/navigation";
 import {
   createPatient,
   type CreatePatientState,
@@ -27,8 +28,6 @@ import { TagInput } from "./TagInput";
 import { Input } from "@/components/ui/input";
 import { User, Plus, Save } from "lucide-react";
 
-type SexType = "MALE" | "FEMALE" | undefined;
-
 type BloodGroupType = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
 
 const SexChoice = [
@@ -46,8 +45,8 @@ const BloodGroup = [
 ];
 const initialState: CreatePatientState = {};
 const CreatePatientForm = () => {
-  const [sexValue, setSexValue] = useState<SexType>();
   const [bloodGroup, setBloodGroup] = useState<BloodGroupType>();
+  const router = useRouter();
   const [state, formAction, isPending] = useActionState(
     createPatient,
     initialState,
@@ -66,9 +65,11 @@ const CreatePatientForm = () => {
             <div className='p-2 px-2.5 flex justify-center items-center w-fit rounded-sm bg-primary-foreground'>
               <User className='text-primary' />
             </div>
-            <h2 className='text-2xl'>Personal Information</h2>
+            <h2 className='md:text-2xl text-lg'>Personal Information</h2>
           </FieldLegend>
-          <FieldDescription>*Required fields</FieldDescription>
+          <FieldDescription className='text-sm text-muted-foreground'>
+            *Required fields
+          </FieldDescription>
         </div>
         <FieldSeparator />
         <FieldGroup>
@@ -81,7 +82,7 @@ const CreatePatientForm = () => {
               <FieldError>{state.fieldErrors.name[0]}</FieldError>
             )}
           </Field>
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='grid md:grid-cols-2 gap-4'>
             <Field>
               <FieldLabel>
                 Date of Birth<span className='text-red-400'>*</span>
@@ -100,28 +101,24 @@ const CreatePatientForm = () => {
               <FieldLabel>
                 Sex<span className='text-red-400'>*</span>
               </FieldLabel>
-              <Select
-                onValueChange={(value) => setSexValue(value as SexType)}
-                items={SexChoice}
-              >
-                <SelectTrigger className='w-full h-full!'>
+              <Select name='sex'>
+                <SelectTrigger className='w-full h-full! grow-0'>
                   <SelectValue placeholder='Select Sex' />
                 </SelectTrigger>
                 <SelectContent>
                   {SexChoice.map((sex, index) => (
-                    <SelectItem key={index} value={sex.value}>
+                    <SelectItem key={sex.value + index} value={sex.value}>
                       {sex.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Input type='hidden' value={sexValue} name='sex' />
               {state.fieldErrors?.sex && (
                 <FieldError>{state.fieldErrors.sex[0]}</FieldError>
               )}
             </Field>
           </div>
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='grid md:grid-cols-2 gap-4'>
             <Field>
               <FieldLabel>
                 Phone Number<span className='text-red-400'>*</span>
@@ -172,7 +169,7 @@ const CreatePatientForm = () => {
           </FieldLegend>
         </div>
         <FieldGroup>
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='grid md:grid-cols-2 gap-4'>
             <Field>
               <FieldLabel>Blood Group</FieldLabel>
               <Select
@@ -225,7 +222,10 @@ const CreatePatientForm = () => {
         </FieldGroup>
       </FieldSet>
       <div className='mt-10 flex justify-end gap-4'>
-        <Button className='bg-white border-2 border-neutral-400 hover:bg-white/20 cursor-pointer py-5 px-5 text-black'>
+        <Button
+          onClick={() => router.push("/patients")}
+          className='bg-white border-2 border-neutral-400 hover:bg-white/20 cursor-pointer py-5 px-5 text-black'
+        >
           Cancel
         </Button>
 
