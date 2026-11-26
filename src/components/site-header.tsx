@@ -15,7 +15,7 @@ export async function SiteHeader() {
           orientation='vertical'
           className='mx-2 h-4 data-vertical:self-auto'
         />
-        <h1 className='text-base font-medium'>{`${greeting}, ${session?.user.role === "DOCTOR" ? "Dr" : ""} ${session?.user.name}`}</h1>
+        <h1 className='text-base font-medium'>{`${greeting}, ${session?.user.name}`}</h1>
       </div>
     </header>
   );
