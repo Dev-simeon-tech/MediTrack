@@ -78,7 +78,7 @@ export function DashboardOverview({
               {dateLabel}
             </p>
             <h1 className='mt-1 text-2xl font-semibold tracking-tight'>
-              Good day, Dr. {doctorName}
+              Good day, {doctorName}
             </h1>
             <p className='mt-1 text-sm text-muted-foreground'>
               Here is your clinical schedule and activity at a glance.
